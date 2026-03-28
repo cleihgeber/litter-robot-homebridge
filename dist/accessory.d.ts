@@ -1,0 +1,40 @@
+import type { PlatformAccessory } from 'homebridge';
+import type { LitterRobotAPI } from './api';
+import type { LitterRobotPlatform } from './platform';
+import { type LitterRobot3Data } from './settings';
+export declare class LitterRobotAccessory {
+    private readonly platform;
+    private readonly accessory;
+    private readonly api;
+    private readonly powerService;
+    private readonly nightLightService;
+    private readonly cleanCycleService;
+    private readonly occupancyService;
+    private readonly filterService;
+    private readonly catMotionService;
+    private readonly cycleCompleteService;
+    private readonly drawerFullContactService;
+    private robot;
+    private previousUnitStatus;
+    constructor(platform: LitterRobotPlatform, accessory: PlatformAccessory, api: LitterRobotAPI);
+    private getOrAddService;
+    updateState(robot: LitterRobot3Data): void;
+    private isPowerOn;
+    private getPowerOn;
+    private setPowerOn;
+    private isNightLightOn;
+    private getNightLightOn;
+    private setNightLightOn;
+    private isCycleActive;
+    private getCycleActive;
+    private startCleanCycle;
+    private isOccupied;
+    private getOccupancy;
+    private getCycleCompleteContact;
+    private getDrawerFullContact;
+    private isDrawerFull;
+    private getDrawerLevelPercent;
+    private getDrawerFullIndication;
+    private getDrawerLevel;
+}
+//# sourceMappingURL=accessory.d.ts.map
