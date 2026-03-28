@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const platform_1 = require("./platform");
 const settings_1 = require("./settings");
-exports.default = (api) => {
+module.exports = (api) => {
     api.registerPlatform(settings_1.PLATFORM_NAME, platform_1.LitterRobotPlatform);
 };
 //# sourceMappingURL=index.js.map
