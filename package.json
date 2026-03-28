@@ -1,0 +1,29 @@
+{
+  "name": "homebridge-litter-robot-3",
+  "version": "1.0.0",
+  "description": "Homebridge plugin for Litter Robot 3 control via Whisker app credentials",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "watch": "tsc -w"
+  },
+  "keywords": [
+    "homebridge-plugin",
+    "litter-robot",
+    "litter-robot-3",
+    "whisker"
+  ],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "homebridge": "^1.6.0 || ^2.0.0",
+    "node": ">=18.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "homebridge": "^1.8.0",
+    "typescript": "^5.3.0"
+  }
+}

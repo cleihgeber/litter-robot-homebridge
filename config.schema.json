@@ -1,0 +1,42 @@
+{
+  "pluginAlias": "LitterRobot3",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "Control your Litter Robot 3 via Homebridge using your Whisker app credentials.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "email": {
+        "title": "Email",
+        "type": "string",
+        "required": true,
+        "description": "Your Whisker app email address."
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "required": true,
+        "description": "Your Whisker app password."
+      },
+      "pollingInterval": {
+        "title": "Polling Interval (seconds)",
+        "type": "integer",
+        "default": 30,
+        "minimum": 10,
+        "description": "How often to poll the Litter Robot API for status updates."
+      }
+    }
+  },
+  "layout": [
+    "email",
+    "password",
+    {
+      "type": "fieldset",
+      "title": "Advanced",
+      "expandable": true,
+      "items": [
+        "pollingInterval"
+      ]
+    }
+  ]
+}
