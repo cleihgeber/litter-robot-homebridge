@@ -13,8 +13,12 @@ export class LitterRobotAccessory {
   private readonly cleanCycleService: Service;
   private readonly occupancyService: Service;
   private readonly filterService: Service;
+  private readonly catMotionService: Service;
+  private readonly cycleCompleteService: Service;
+  private readonly drawerFullContactService: Service;
 
   private robot: LitterRobot3Data;
+  private previousUnitStatus: string;
 
   constructor(
     private readonly platform: LitterRobotPlatform,
@@ -22,6 +26,7 @@ export class LitterRobotAccessory {
     private readonly api: LitterRobotAPI,
   ) {
     this.robot = accessory.context.robot as LitterRobot3Data;
+    this.previousUnitStatus = this.robot.unitStatus;
 
     // Accessory Information
     const infoService = this.accessory.getService(this.platform.Service.AccessoryInformation)!;
@@ -86,6 +91,36 @@ export class LitterRobotAccessory {
     this.filterService
       .getCharacteristic(this.platform.Characteristic.FilterLifeLevel)
       .onGet(() => this.getDrawerLevel());
+
+    // Motion Sensor for cat detection (triggers HomeKit automations)
+    this.catMotionService = this.getOrAddService(
+      this.platform.Service.MotionSensor,
+      `${this.robot.litterRobotNickname} Cat Sensor`,
+      'cat-motion',
+    );
+    this.catMotionService
+      .getCharacteristic(this.platform.Characteristic.MotionDetected)
+      .onGet(() => this.isOccupied());
+
+    // Contact Sensor for clean cycle complete (OPEN = cycle just finished)
+    this.cycleCompleteService = this.getOrAddService(
+      this.platform.Service.ContactSensor,
+      `${this.robot.litterRobotNickname} Cycle Complete`,
+      'cycle-complete',
+    );
+    this.cycleCompleteService
+      .getCharacteristic(this.platform.Characteristic.ContactSensorState)
+      .onGet(() => this.getCycleCompleteContact());
+
+    // Contact Sensor for drawer full (OPEN = drawer full)
+    this.drawerFullContactService = this.getOrAddService(
+      this.platform.Service.ContactSensor,
+      `${this.robot.litterRobotNickname} Drawer Full`,
+      'drawer-full',
+    );
+    this.drawerFullContactService
+      .getCharacteristic(this.platform.Characteristic.ContactSensorState)
+      .onGet(() => this.getDrawerFullContact());
   }
 
   private getOrAddService(
@@ -100,8 +135,19 @@ export class LitterRobotAccessory {
   }
 
   updateState(robot: LitterRobot3Data): void {
+    const prevStatus = this.previousUnitStatus;
+    this.previousUnitStatus = robot.unitStatus;
     this.robot = robot;
     this.accessory.context.robot = robot;
+
+    const statusChanged = prevStatus !== robot.unitStatus;
+    if (statusChanged) {
+      this.platform.log.info(
+        `${robot.litterRobotNickname} status: ${prevStatus} -> ${robot.unitStatus}`,
+      );
+    }
+
+    // --- Switches ---
 
     this.powerService.updateCharacteristic(
       this.platform.Characteristic.On,
@@ -118,12 +164,59 @@ export class LitterRobotAccessory {
       this.isCycleActive(),
     );
 
+    // --- Occupancy Sensor ---
+
     this.occupancyService.updateCharacteristic(
       this.platform.Characteristic.OccupancyDetected,
       this.isOccupied()
         ? this.platform.Characteristic.OccupancyDetected.OCCUPANCY_DETECTED
         : this.platform.Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED,
     );
+
+    // --- Cat Motion Sensor (automation trigger) ---
+
+    this.catMotionService.updateCharacteristic(
+      this.platform.Characteristic.MotionDetected,
+      this.isOccupied(),
+    );
+
+    // --- Cycle Complete Contact Sensor ---
+    // Opens briefly when a clean cycle finishes, then closes on next poll.
+    // This gives HomeKit a rising-edge event to trigger automations.
+
+    const cycleJustCompleted = statusChanged
+      && prevStatus === LitterBoxStatus.CLEAN_CYCLE
+      && (robot.unitStatus === LitterBoxStatus.CLEAN_CYCLE_COMPLETE
+        || robot.unitStatus === LitterBoxStatus.READY);
+
+    this.cycleCompleteService.updateCharacteristic(
+      this.platform.Characteristic.ContactSensorState,
+      cycleJustCompleted
+        ? this.platform.Characteristic.ContactSensorState.CONTACT_NOT_DETECTED
+        : this.platform.Characteristic.ContactSensorState.CONTACT_DETECTED,
+    );
+
+    // Auto-close the contact sensor after one poll cycle so it resets
+    if (cycleJustCompleted) {
+      this.platform.log.info(`Clean cycle completed on ${robot.litterRobotNickname}`);
+      setTimeout(() => {
+        this.cycleCompleteService.updateCharacteristic(
+          this.platform.Characteristic.ContactSensorState,
+          this.platform.Characteristic.ContactSensorState.CONTACT_DETECTED,
+        );
+      }, 10000);
+    }
+
+    // --- Drawer Full Contact Sensor ---
+
+    this.drawerFullContactService.updateCharacteristic(
+      this.platform.Characteristic.ContactSensorState,
+      this.isDrawerFull()
+        ? this.platform.Characteristic.ContactSensorState.CONTACT_NOT_DETECTED
+        : this.platform.Characteristic.ContactSensorState.CONTACT_DETECTED,
+    );
+
+    // --- Filter Maintenance ---
 
     this.filterService.updateCharacteristic(
       this.platform.Characteristic.FilterChangeIndication,
@@ -231,6 +324,21 @@ export class LitterRobotAccessory {
     return this.isOccupied()
       ? this.platform.Characteristic.OccupancyDetected.OCCUPANCY_DETECTED
       : this.platform.Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
+  }
+
+  // --- Cycle Complete Contact ---
+
+  private getCycleCompleteContact(): CharacteristicValue {
+    // Normally closed; only opens momentarily on transition
+    return this.platform.Characteristic.ContactSensorState.CONTACT_DETECTED;
+  }
+
+  // --- Drawer Full Contact ---
+
+  private getDrawerFullContact(): CharacteristicValue {
+    return this.isDrawerFull()
+      ? this.platform.Characteristic.ContactSensorState.CONTACT_NOT_DETECTED
+      : this.platform.Characteristic.ContactSensorState.CONTACT_DETECTED;
   }
 
   // --- Waste Drawer ---
