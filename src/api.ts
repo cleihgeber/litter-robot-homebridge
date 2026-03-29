@@ -2,24 +2,18 @@ import https from 'https';
 import http from 'http';
 import { URL } from 'url';
 import type { Logger } from 'homebridge';
+import { CognitoSRP } from './cognito';
 import {
-  LR3_AUTH_URL,
   LR3_API_BASE,
-  LR3_CLIENT_ID,
-  LR3_CLIENT_SECRET,
   LR3_API_KEY,
+  COGNITO_USER_POOL_ID,
+  COGNITO_CLIENT_ID,
   type LitterRobot3Data,
 } from './settings';
 
-interface AuthResponse {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
-  expires_in: number;
-}
-
 interface TokenPayload {
   userId?: string;
+  'custom:userId'?: string;
   sub?: string;
   exp?: number;
 }
@@ -58,6 +52,7 @@ function request(
 
 export class LitterRobotAPI {
   private accessToken = '';
+  private idToken = '';
   private refreshToken = '';
   private userId = '';
   private tokenExpiry = 0;
@@ -81,32 +76,15 @@ export class LitterRobotAPI {
   }
 
   async authenticate(): Promise<void> {
-    const body = new URLSearchParams({
-      client_id: LR3_CLIENT_ID,
-      client_secret: LR3_CLIENT_SECRET,
-      grant_type: 'password',
-      username: this.email,
-      password: this.password,
-    }).toString();
+    const cognito = new CognitoSRP(COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID);
+    const tokens = await cognito.authenticate(this.email, this.password);
 
-    const resp = await request(LR3_AUTH_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'x-api-key': LR3_API_KEY,
-      },
-    }, body);
+    this.accessToken = tokens.accessToken;
+    this.idToken = tokens.idToken;
+    this.refreshToken = tokens.refreshToken;
 
-    if (resp.statusCode !== 200) {
-      throw new Error(`Authentication failed (${resp.statusCode}): ${resp.data}`);
-    }
-
-    const auth: AuthResponse = JSON.parse(resp.data);
-    this.accessToken = auth.access_token;
-    this.refreshToken = auth.refresh_token;
-
-    const decoded = this.decodeJwtPayload(this.accessToken);
-    this.userId = decoded.userId || decoded.sub || '';
+    const decoded = this.decodeJwtPayload(this.idToken);
+    this.userId = decoded['custom:userId'] || decoded.userId || decoded.sub || '';
     this.tokenExpiry = (decoded.exp || 0) * 1000;
 
     if (!this.userId) {
@@ -117,35 +95,20 @@ export class LitterRobotAPI {
   }
 
   private async refreshAuth(): Promise<void> {
-    const body = new URLSearchParams({
-      client_id: LR3_CLIENT_ID,
-      client_secret: LR3_CLIENT_SECRET,
-      grant_type: 'refresh_token',
-      refresh_token: this.refreshToken,
-    }).toString();
+    try {
+      const cognito = new CognitoSRP(COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID);
+      const tokens = await cognito.refreshTokens(this.refreshToken);
 
-    const resp = await request(LR3_AUTH_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'x-api-key': LR3_API_KEY,
-      },
-    }, body);
+      this.accessToken = tokens.accessToken;
+      this.idToken = tokens.idToken;
 
-    if (resp.statusCode !== 200) {
+      const decoded = this.decodeJwtPayload(this.idToken);
+      this.userId = decoded['custom:userId'] || decoded.userId || decoded.sub || this.userId;
+      this.tokenExpiry = (decoded.exp || 0) * 1000;
+    } catch {
       this.log.warn('Token refresh failed, re-authenticating...');
       return this.authenticate();
     }
-
-    const auth: AuthResponse = JSON.parse(resp.data);
-    this.accessToken = auth.access_token;
-    if (auth.refresh_token) {
-      this.refreshToken = auth.refresh_token;
-    }
-
-    const decoded = this.decodeJwtPayload(this.accessToken);
-    this.userId = decoded.userId || decoded.sub || this.userId;
-    this.tokenExpiry = (decoded.exp || 0) * 1000;
   }
 
   private async ensureAuth(): Promise<void> {
@@ -163,7 +126,7 @@ export class LitterRobotAPI {
 
     const url = `${LR3_API_BASE}${path}`;
     const headers: Record<string, string> = {
-      'Authorization': `Bearer ${this.accessToken}`,
+      'Authorization': this.idToken,
       'x-api-key': LR3_API_KEY,
     };
 
@@ -176,10 +139,9 @@ export class LitterRobotAPI {
     const resp = await request(url, { method, headers }, bodyStr);
 
     if (resp.statusCode === 401) {
-      // Token expired, refresh and retry once
       await this.refreshAuth();
       const headers2: Record<string, string> = {
-        'Authorization': `Bearer ${this.accessToken}`,
+        'Authorization': this.idToken,
         'x-api-key': LR3_API_KEY,
       };
       if (body) {

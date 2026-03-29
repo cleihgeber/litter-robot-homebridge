@@ -1,9 +1,8 @@
 export declare const PLATFORM_NAME = "LitterRobot";
 export declare const PLUGIN_NAME = "homebridge-litter-robot-3";
-export declare const LR3_AUTH_URL = "https://autopets.sso.iothings.site/oauth/token";
+export declare const COGNITO_USER_POOL_ID = "us-east-1_rjhNnZVAm";
+export declare const COGNITO_CLIENT_ID = "4552ujeu3aic90nf8qn53levmn";
 export declare const LR3_API_BASE = "https://v2.api.whisker.iothings.site";
-export declare const LR3_CLIENT_ID = "IYXzWN908psOm7sNpe4G.ios.whisker.robots";
-export declare const LR3_CLIENT_SECRET = "C63CLXOmwNaqLTB2xXo6QIWGwwBamcPuaul";
 export declare const LR3_API_KEY = "p7ndMoj61npRZP5CVz9v4Uj0bG769xy6758QRBPb";
 export declare enum LitterBoxCommand {
     CLEAN = "<C",

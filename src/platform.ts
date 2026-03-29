@@ -29,14 +29,15 @@ export class LitterRobotPlatform implements DynamicPlatformPlugin {
     this.Characteristic = this.homebridgeApi.hap.Characteristic;
 
     this.pollingInterval = (config.pollingInterval as number) || 30;
+    const email = (config.email || config.username) as string;
     this.api = new LitterRobotAPI(
       log,
-      config.email as string,
+      email,
       config.password as string,
     );
 
-    if (!config.email || !config.password) {
-      this.log.error('Missing email or password in config. Plugin will not start.');
+    if (!email || !config.password) {
+      this.log.error('Missing email/username or password in config. Plugin will not start.');
       return;
     }
 

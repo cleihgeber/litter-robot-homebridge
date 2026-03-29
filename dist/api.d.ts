@@ -2,6 +2,7 @@ import type { Logger } from 'homebridge';
 import { type LitterRobot3Data } from './settings';
 export declare class LitterRobotAPI {
     private accessToken;
+    private idToken;
     private refreshToken;
     private userId;
     private tokenExpiry;

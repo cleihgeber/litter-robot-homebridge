@@ -14,9 +14,10 @@ class LitterRobotPlatform {
         this.Service = this.homebridgeApi.hap.Service;
         this.Characteristic = this.homebridgeApi.hap.Characteristic;
         this.pollingInterval = config.pollingInterval || 30;
-        this.api = new api_1.LitterRobotAPI(log, config.email, config.password);
-        if (!config.email || !config.password) {
-            this.log.error('Missing email or password in config. Plugin will not start.');
+        const email = (config.email || config.username);
+        this.api = new api_1.LitterRobotAPI(log, email, config.password);
+        if (!email || !config.password) {
+            this.log.error('Missing email/username or password in config. Plugin will not start.');
             return;
         }
         this.homebridgeApi.on('didFinishLaunching', () => {

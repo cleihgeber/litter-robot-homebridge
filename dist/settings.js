@@ -1,12 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LitterBoxStatus = exports.LitterBoxCommand = exports.LR3_API_KEY = exports.LR3_CLIENT_SECRET = exports.LR3_CLIENT_ID = exports.LR3_API_BASE = exports.LR3_AUTH_URL = exports.PLUGIN_NAME = exports.PLATFORM_NAME = void 0;
+exports.LitterBoxStatus = exports.LitterBoxCommand = exports.LR3_API_KEY = exports.LR3_API_BASE = exports.COGNITO_CLIENT_ID = exports.COGNITO_USER_POOL_ID = exports.PLUGIN_NAME = exports.PLATFORM_NAME = void 0;
 exports.PLATFORM_NAME = 'LitterRobot';
 exports.PLUGIN_NAME = 'homebridge-litter-robot-3';
-exports.LR3_AUTH_URL = 'https://autopets.sso.iothings.site/oauth/token';
+exports.COGNITO_USER_POOL_ID = 'us-east-1_rjhNnZVAm';
+exports.COGNITO_CLIENT_ID = '4552ujeu3aic90nf8qn53levmn';
 exports.LR3_API_BASE = 'https://v2.api.whisker.iothings.site';
-exports.LR3_CLIENT_ID = 'IYXzWN908psOm7sNpe4G.ios.whisker.robots';
-exports.LR3_CLIENT_SECRET = 'C63CLXOmwNaqLTB2xXo6QIWGwwBamcPuaul';
 exports.LR3_API_KEY = 'p7ndMoj61npRZP5CVz9v4Uj0bG769xy6758QRBPb';
 var LitterBoxCommand;
 (function (LitterBoxCommand) {
