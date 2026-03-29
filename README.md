@@ -83,7 +83,13 @@ This plugin authenticates with the Whisker cloud API using AWS Cognito SRP (Secu
 
 ## Credits
 
-API reverse-engineering based on [pylitterbot](https://github.com/natekspencer/pylitterbot) by [@natekspencer](https://github.com/natekspencer).
+- **[pylitterbot](https://github.com/natekspencer/pylitterbot)** by [@natekspencer](https://github.com/natekspencer) -- The Whisker API reverse-engineering, Cognito authentication flow, endpoint documentation, and command definitions used in this plugin are all based on this incredible Python library. It also powers the official [Home Assistant Whisker integration](https://www.home-assistant.io/integrations/litterrobot/). This plugin would not exist without their work.
+- **[Homebridge](https://homebridge.io)** -- The platform that makes HomeKit integration possible for unsupported devices.
+- **[homebridge-plugin-template](https://github.com/homebridge/homebridge-plugin-template)** -- Official Homebridge TypeScript plugin template used as a structural reference.
+
+## Transparency
+
+This plugin was vibe coded entirely with [Claude](https://claude.ai) (Anthropic's AI assistant) using [Claude Code](https://claude.ai/code). All source code, architecture decisions, Cognito SRP implementation, and this README were AI-generated with human direction and testing.
 
 ## License
 
