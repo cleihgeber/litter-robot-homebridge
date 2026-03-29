@@ -1,4 +1,4 @@
-export declare const PLATFORM_NAME = "LitterRobot3";
+export declare const PLATFORM_NAME = "LitterRobot";
 export declare const PLUGIN_NAME = "homebridge-litter-robot-3";
 export declare const LR3_AUTH_URL = "https://autopets.sso.iothings.site/oauth/token";
 export declare const LR3_API_BASE = "https://v2.api.whisker.iothings.site";

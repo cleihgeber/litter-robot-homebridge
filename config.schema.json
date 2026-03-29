@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "LitterRobot3",
+  "pluginAlias": "LitterRobot",
   "pluginType": "platform",
   "singular": true,
   "headerDisplay": "Control your Litter Robot 3 via Homebridge using your Whisker app credentials.",

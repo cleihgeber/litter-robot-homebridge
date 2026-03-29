@@ -1,4 +1,4 @@
-export const PLATFORM_NAME = 'LitterRobot3';
+export const PLATFORM_NAME = 'LitterRobot';
 export const PLUGIN_NAME = 'homebridge-litter-robot-3';
 
 export const LR3_AUTH_URL = 'https://autopets.sso.iothings.site/oauth/token';

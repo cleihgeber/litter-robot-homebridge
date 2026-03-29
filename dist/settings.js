@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LitterBoxStatus = exports.LitterBoxCommand = exports.LR3_API_KEY = exports.LR3_CLIENT_SECRET = exports.LR3_CLIENT_ID = exports.LR3_API_BASE = exports.LR3_AUTH_URL = exports.PLUGIN_NAME = exports.PLATFORM_NAME = void 0;
-exports.PLATFORM_NAME = 'LitterRobot3';
+exports.PLATFORM_NAME = 'LitterRobot';
 exports.PLUGIN_NAME = 'homebridge-litter-robot-3';
 exports.LR3_AUTH_URL = 'https://autopets.sso.iothings.site/oauth/token';
 exports.LR3_API_BASE = 'https://v2.api.whisker.iothings.site';
