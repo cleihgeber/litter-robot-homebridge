@@ -12,6 +12,7 @@ import {
 } from './settings';
 
 interface TokenPayload {
+  mid?: string;
   userId?: string;
   'custom:userId'?: string;
   sub?: string;
@@ -84,7 +85,7 @@ export class LitterRobotAPI {
     this.refreshToken = tokens.refreshToken;
 
     const decoded = this.decodeJwtPayload(this.idToken);
-    this.userId = decoded['custom:userId'] || decoded.userId || decoded.sub || '';
+    this.userId = decoded.mid || decoded['custom:userId'] || decoded.userId || decoded.sub || '';
     this.tokenExpiry = (decoded.exp || 0) * 1000;
 
     if (!this.userId) {
@@ -103,7 +104,7 @@ export class LitterRobotAPI {
       this.idToken = tokens.idToken;
 
       const decoded = this.decodeJwtPayload(this.idToken);
-      this.userId = decoded['custom:userId'] || decoded.userId || decoded.sub || this.userId;
+      this.userId = decoded.mid || decoded['custom:userId'] || decoded.userId || decoded.sub || this.userId;
       this.tokenExpiry = (decoded.exp || 0) * 1000;
     } catch {
       this.log.warn('Token refresh failed, re-authenticating...');
@@ -126,7 +127,7 @@ export class LitterRobotAPI {
 
     const url = `${LR3_API_BASE}${path}`;
     const headers: Record<string, string> = {
-      'Authorization': this.idToken,
+      'Authorization': `Bearer ${this.idToken}`,
       'x-api-key': LR3_API_KEY,
     };
 
@@ -141,7 +142,7 @@ export class LitterRobotAPI {
     if (resp.statusCode === 401) {
       await this.refreshAuth();
       const headers2: Record<string, string> = {
-        'Authorization': this.idToken,
+        'Authorization': `Bearer ${this.idToken}`,
         'x-api-key': LR3_API_KEY,
       };
       if (body) {

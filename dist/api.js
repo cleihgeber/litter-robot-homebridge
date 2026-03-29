@@ -55,7 +55,7 @@ class LitterRobotAPI {
         this.idToken = tokens.idToken;
         this.refreshToken = tokens.refreshToken;
         const decoded = this.decodeJwtPayload(this.idToken);
-        this.userId = decoded['custom:userId'] || decoded.userId || decoded.sub || '';
+        this.userId = decoded.mid || decoded['custom:userId'] || decoded.userId || decoded.sub || '';
         this.tokenExpiry = (decoded.exp || 0) * 1000;
         if (!this.userId) {
             throw new Error('Could not extract userId from token');
@@ -69,7 +69,7 @@ class LitterRobotAPI {
             this.accessToken = tokens.accessToken;
             this.idToken = tokens.idToken;
             const decoded = this.decodeJwtPayload(this.idToken);
-            this.userId = decoded['custom:userId'] || decoded.userId || decoded.sub || this.userId;
+            this.userId = decoded.mid || decoded['custom:userId'] || decoded.userId || decoded.sub || this.userId;
             this.tokenExpiry = (decoded.exp || 0) * 1000;
         }
         catch {
@@ -90,7 +90,7 @@ class LitterRobotAPI {
         await this.ensureAuth();
         const url = `${settings_1.LR3_API_BASE}${path}`;
         const headers = {
-            'Authorization': this.idToken,
+            'Authorization': `Bearer ${this.idToken}`,
             'x-api-key': settings_1.LR3_API_KEY,
         };
         let bodyStr;
@@ -102,7 +102,7 @@ class LitterRobotAPI {
         if (resp.statusCode === 401) {
             await this.refreshAuth();
             const headers2 = {
-                'Authorization': this.idToken,
+                'Authorization': `Bearer ${this.idToken}`,
                 'x-api-key': settings_1.LR3_API_KEY,
             };
             if (body) {
